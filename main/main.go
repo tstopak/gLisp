@@ -1,11 +1,7 @@
 package main
 
-import (
-	"fmt"
-	"golisp/reader"
-)
+import "golisp/reader"
 
-func main(){
-	fmt.Println("Hello world!")
+func main() {
 	reader.ReadInput()
 }
