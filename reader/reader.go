@@ -9,15 +9,16 @@ import (
 )
 
 type TokenTree struct {
-	root *Token
+	Root *Token
 }
 
 type Token struct {
-	children []*Token
-	value    string
+	Children []*Token
+	Value    string
 }
 
-func ReadInput() (input string, tree *TokenTree) {
+func ReadInput() (tree *TokenTree) {
+	var input string
 	fmt.Println("Input an sexpr:")
 	in := bufio.NewReader(os.Stdin)
 	input, _ = in.ReadString('\n')
@@ -30,13 +31,13 @@ func ReadInput() (input string, tree *TokenTree) {
 func parseList(input string) *Token {
 	var root = Token{}
 	tokenStrings := SplitInput(input)
-	root.children = make([]*Token, 0, len(tokenStrings))
+	root.Children = make([]*Token, 0, len(tokenStrings))
 	for _, tokenVal := range tokenStrings {
 		firstChar := string(tokenVal[0])
 		if firstChar == "(" {
-			root.children = append(root.children, parseList(tokenVal))
+			root.Children = append(root.Children, parseList(tokenVal))
 		} else {
-			root.children = append(root.children, &Token{nil, tokenVal})
+			root.Children = append(root.Children, &Token{nil, tokenVal})
 		}
 	}
 	return &root
