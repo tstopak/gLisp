@@ -1,16 +1,16 @@
 package main
 
 import (
-	"fmt"
-	"golisp/GlispError"
+	"golisp/interpreter"
+	"golisp/reader"
 )
 
 func main() {
-	/*tokentree := *reader.ReadInput()
+	tokentree := *reader.ReadInput()
 	traverser := interpreter.Traverser{Tree: tokentree}
 	traverser.Traverse()
-	*/
-	test := GlispError.GLispError{}
+	/*test := GlispError.GLispError{}
 	testFuture := GlispError.Future{Contents: test}
 	fmt.Println(testFuture.IsGLispError())
+	*/
 }

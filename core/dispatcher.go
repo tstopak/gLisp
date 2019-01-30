@@ -1,6 +1,8 @@
 package core
 
-import "golisp/GlispError"
+import (
+	"golisp/GlispError"
+)
 
 type dispatcher struct {
 	ns GLispNamespace
@@ -21,7 +23,10 @@ func (disp dispatcher) Call(callForm []string) (result string) {
 	value := disp.ns.Invoke(funcName, args)
 	if value.IsGLispError() {
 		thisError := value.Contents.(GlispError.GLispError)
-		panic(thisError.PrintError)
+		thisError.PrintError()
+		panic("")
+	} else {
+		result = value.Contents.(string)
 	}
 	return
 }

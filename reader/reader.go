@@ -48,6 +48,8 @@ func SplitInput(input string) (tokenList []string) {
 	input = newlineRemover.ReplaceAllString(input, "")
 	if string(input[0]) == "(" && string(input[len(input)-1]) == ")" {
 		input = input[1 : len(input)-1]
+	} else {
+		panic("Invalid Syntax")
 	}
 	syntax, _ :=
 		regexp.Compile(`(;+)(.*?)(;+)|(("*?)|('*?))(\(+).*?(\)+)"*|".*?"|[[:graph:]]+`)

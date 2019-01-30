@@ -28,6 +28,7 @@ func (gLispNs gLispNamespace) Invoke(funcName string, args []string) (result Gli
 	}
 	return
 }
+
 func add(args []string) string {
 	var result int64
 	for _, arg := range args {
