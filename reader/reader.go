@@ -3,9 +3,8 @@ package reader
 import (
 	"bufio"
 	"fmt"
-	"math"
 	"os"
-	"regexp"
+	"strings"
 )
 
 type TokenTree struct {
@@ -17,45 +16,46 @@ type Token struct {
 	Value    string
 }
 
-func ReadInput() (tree *TokenTree) {
+func ReadInput() (tree TokenTree) {
 	var input string
 	fmt.Println("Input an sexpr:")
 	in := bufio.NewReader(os.Stdin)
 	input, _ = in.ReadString('\n')
-	root := parseList(input)
-	tree = &TokenTree{root}
-	return
+	root, _ := parse(formatInput(input))
+	tree = TokenTree{Root: root}
+	return tree
 }
 
-//(print (+ 2 3) (+ 4 5))
-func parseList(input string) *Token {
-	var root = Token{}
-	tokenStrings := SplitInput(input)
-	root.Children = make([]*Token, 0, len(tokenStrings))
-	for _, tokenVal := range tokenStrings {
-		firstChar := string(tokenVal[0])
-		if firstChar == "(" {
-			root.Children = append(root.Children, parseList(tokenVal))
-		} else {
-			root.Children = append(root.Children, &Token{nil, tokenVal})
+//(+ (+ 2 3) 2 3 (- (+ 2 3) 3))
+func formatInput(input string) []string {
+	input = strings.Replace(input, "(", "( ", strings.Count(input, "("))
+	input = strings.Replace(input, ")", " ) ", strings.Count(input, ")"))
+	input = strings.Replace(input, "  ", " ", strings.Count(input, "  "))
+	splitInput := strings.Split(input, " ")
+	return splitInput
+}
+
+//(+ (+ 2 3) 2 3 (- 2 3))
+func parse(input []string) (*Token, int) {
+	token := Token{[]*Token{},
+		input[0]}
+	input = input[1:]
+	popped := 0
+	if token.Value == "(" || token.Value == "'(" {
+		for input[0] != ")" {
+			if input[0] == "(" || input[0] == "'(" {
+				tVal, additionPop := parse(input)
+				token.Children = append(token.Children, tVal)
+				input = input[additionPop:]
+				popped += additionPop
+			} else {
+				token.Children = append(token.Children, &Token{[]*Token{}, input[0]})
+			}
+			input = input[1:]
+			popped++
 		}
+		input = input[1:]
+		popped++
 	}
-	return &root
-}
-
-func SplitInput(input string) (tokenList []string) {
-	newlineRemover, _ := regexp.Compile(`\n`)
-	input = newlineRemover.ReplaceAllString(input, "")
-	if string(input[0]) == "(" && string(input[len(input)-1]) == ")" {
-		input = input[1 : len(input)-1]
-	} else {
-		panic("Invalid Syntax")
-	}
-	syntax, _ :=
-		regexp.Compile(`(;+)(.*?)(;+)|(("*?)|('*?))(\(+).*?(\)+)"*|".*?"|[[:graph:]]+`)
-	tokens := syntax.FindAllStringIndex(input, math.MaxInt64)
-	for _, location := range tokens {
-		tokenList = append(tokenList, input[location[0]:location[1]])
-	}
-	return
+	return &token, popped
 }
