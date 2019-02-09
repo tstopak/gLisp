@@ -40,7 +40,7 @@ func NewGLispNamespace(traverser *Traverser) GLispNamespace {
 	localNs.specialForms["<="] = lte
 	localNs.specialForms["and"] = and
 	localNs.specialForms["or"] = or
-	localNs.specialForms["println"] = println
+	localNs.specialForms["println"] = gLispPrintln
 	return &localNs
 }
 func (gLispNs gLispNamespace) Invoke(funcName string, args []string) (result GlispError.Future) {
@@ -78,7 +78,7 @@ func insertParam(token reader.Token, param string, value string) reader.Token {
 	for _, child := range token.Children {
 		if child.Value == param {
 			child.Value = value
-		} else if child.Value == "(" {
+		} else if child.Value == "(" || child.Value == ",(" {
 			insertParam(*child, param, value)
 		}
 	}
@@ -209,7 +209,7 @@ func or(args []string) string {
 	return "false"
 }
 
-func println(args []string) string {
+func gLispPrintln(args []string) string {
 	for _, arg := range args {
 		fmt.Println(arg)
 	}

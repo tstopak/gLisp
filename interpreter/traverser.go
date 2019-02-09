@@ -102,7 +102,14 @@ func (traverser Traverser) Interpret(token reader.Token) (result string) {
 			}
 
 		}
+		isCar := false
+		if string(token.Children[0].Value) == "car" {
+			isCar = true
+		}
+		if isCar {
+			return token.Children[1].Children[0].Value
 
+		}
 		isFunc := false
 		//Create a variable to hold a list in the case this is a function call
 		var funcCall []string = nil
