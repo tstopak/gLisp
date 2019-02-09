@@ -10,7 +10,9 @@ type dispatcher struct {
 }
 type Dispatcher interface {
 	Call(callForm []string) (result string)
-	Defun(name string, params *reader.Token, body *reader.Token)
+	Defun(name string, params reader.Token, body reader.Token)
+	Defparameter(name string, value *reader.Token)
+	ResolveVar(name string) string
 }
 
 func NewDispatcher(traverser *Traverser) (disp Dispatcher) {
@@ -34,7 +36,19 @@ func (disp dispatcher) Call(callForm []string) (result string) {
 	return
 }
 
-func (disp dispatcher) Defun(name string, params *reader.Token, body *reader.Token) {
+func (disp dispatcher) Defun(name string, params reader.Token, body reader.Token) {
 	ns := *disp.ns
 	ns.Defun(name, params, body)
+}
+
+func (disp dispatcher) Defparameter(name string, value *reader.Token) {
+	ns := *disp.ns
+	ns.Defparameter(name, value)
+
+}
+
+func (disp dispatcher) ResolveVar(name string) string {
+	ns := *disp.ns
+	val := ns.ResolveVar(name)
+	return val
 }

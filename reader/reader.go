@@ -18,7 +18,7 @@ type Token struct {
 
 func ReadInput() (tree TokenTree) {
 	var input string
-	fmt.Println("Input an sexpr:")
+	fmt.Print("Glisp>>")
 	in := bufio.NewReader(os.Stdin)
 	input, _ = in.ReadString('\n')
 	root, _ := parse(formatInput(input))
@@ -41,9 +41,9 @@ func parse(input []string) (*Token, int) {
 		input[0]}
 	input = input[1:]
 	popped := 0
-	if token.Value == "(" || token.Value == "'(" {
+	if token.Value == "(" || token.Value == "'(" || token.Value == ",(" {
 		for input[0] != ")" {
-			if input[0] == "(" || input[0] == "'(" {
+			if input[0] == "(" || input[0] == "'(" || input[0] == ",(" {
 				tVal, additionPop := parse(input)
 				token.Children = append(token.Children, tVal)
 				input = input[additionPop:]

@@ -1,6 +1,7 @@
 package interpreter
 
 import (
+	"fmt"
 	"golisp/GlispError"
 	"golisp/core"
 	"golisp/reader"
@@ -8,20 +9,24 @@ import (
 )
 
 type gLispNamespace struct {
-	specialForms map[string]func([]string) string
-	globalSpace  map[string]*core.Function
-	Traverser    *Traverser
+	specialForms        map[string]func([]string) string
+	globalFunctionSpace map[string]core.Function
+	globalConstantSpace map[string]string
+	Traverser           *Traverser
 }
 type GLispNamespace interface {
 	Invoke(funcName string, args []string) GlispError.Future
-	Defun(name string, params *reader.Token, body *reader.Token)
+	Defun(name string, params reader.Token, body reader.Token)
+	Defparameter(name string, value *reader.Token)
+	ResolveVar(name string) string
 }
 
 func NewGLispNamespace(traverser *Traverser) GLispNamespace {
 	localNs := gLispNamespace{
-		specialForms: make(map[string]func([]string) string),
-		globalSpace:  make(map[string]*core.Function),
-		Traverser:    traverser,
+		specialForms:        make(map[string]func([]string) string),
+		globalFunctionSpace: make(map[string]core.Function),
+		globalConstantSpace: make(map[string]string),
+		Traverser:           traverser,
 	}
 	localNs.specialForms["+"] = add
 	localNs.specialForms["="] = equals
@@ -35,13 +40,15 @@ func NewGLispNamespace(traverser *Traverser) GLispNamespace {
 	localNs.specialForms["<="] = lte
 	localNs.specialForms["and"] = and
 	localNs.specialForms["or"] = or
+	localNs.specialForms["println"] = println
 	return &localNs
 }
 func (gLispNs gLispNamespace) Invoke(funcName string, args []string) (result GlispError.Future) {
 	if funcCall, exists := gLispNs.specialForms[funcName]; exists {
 		result = GlispError.Future{Contents: funcCall(args)}
-	} else if funcCall, exists := gLispNs.globalSpace[funcName]; exists {
-		result = GlispError.Future{Contents: gLispNs.evalUserFunc(funcCall, args)}
+	} else if funcCall, exists := gLispNs.globalFunctionSpace[funcName]; exists {
+		fun := deepCopyFunction(funcCall)
+		result = GlispError.Future{Contents: gLispNs.evalUserFunc(fun, args)}
 	} else {
 		gle := GlispError.GLispError{}
 		(&gle).SetName("Function Not Found Error")
@@ -50,28 +57,39 @@ func (gLispNs gLispNamespace) Invoke(funcName string, args []string) (result Gli
 	}
 	return
 }
-func (gLispNs gLispNamespace) evalUserFunc(fun *core.Function, args []string) string {
+func (gLispNs gLispNamespace) ResolveVar(name string) string {
+	value, exist := gLispNs.globalConstantSpace[name]
+	if exist == false {
+		return name
+	}
+	return value
+}
+func (gLispNs gLispNamespace) evalUserFunc(fun core.Function, args []string) string {
 	requiredParams := fun.Param.Children
 	body := fun.Body
 	for index, param := range requiredParams {
 		value := args[index]
 		insertParam(body, param.Value, value)
 	}
-	return gLispNs.Traverser.Interpret(*body)
+	return gLispNs.Traverser.Interpret(body)
 
 }
-func insertParam(token *reader.Token, param string, value string) *reader.Token {
+func insertParam(token reader.Token, param string, value string) reader.Token {
 	for _, child := range token.Children {
 		if child.Value == param {
 			child.Value = value
 		} else if child.Value == "(" {
-			insertParam(child, param, value)
+			insertParam(*child, param, value)
 		}
 	}
 	return token
 }
-func (gLispNs *gLispNamespace) Defun(name string, params *reader.Token, body *reader.Token) {
-	gLispNs.globalSpace[name] = &core.Function{params, body}
+func (gLispNs *gLispNamespace) Defun(name string, params reader.Token, body reader.Token) {
+	gLispNs.globalFunctionSpace[name] = core.Function{params, body}
+}
+func (gLispNs *gLispNamespace) Defparameter(name string, value *reader.Token) {
+	constantVal := gLispNs.Traverser.Interpret(*value)
+	gLispNs.globalConstantSpace[name] = constantVal
 }
 func add(args []string) string {
 	var result int64
@@ -189,4 +207,32 @@ func or(args []string) string {
 		}
 	}
 	return "false"
+}
+
+func println(args []string) string {
+	for _, arg := range args {
+		fmt.Println(arg)
+	}
+	return args[len(args)-1]
+}
+
+func deepCopyFunction(fun core.Function) core.Function {
+	copyFun := core.Function{}
+	copyFun.Param = *deepCopyToken(fun.Param)
+	copyFun.Body = *deepCopyToken(fun.Body)
+	return copyFun
+}
+
+func deepCopyToken(token reader.Token) *reader.Token {
+	copiedToken := reader.Token{}
+	if len(token.Children) != 0 {
+		for _, child := range token.Children {
+			copiedToken.Children = append(copiedToken.Children, deepCopyToken(*child))
+		}
+		copiedToken.Value = token.Value
+		return &copiedToken
+	} else {
+		copiedToken.Value = token.Value
+		return &copiedToken
+	}
 }
