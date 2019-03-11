@@ -26,22 +26,28 @@ func ReadInput() (tree TokenTree) {
 	tree = TokenTree{Root: root}
 	return tree
 }
+func InternalInput(input string) (tree TokenTree) {
+	root, _ := parse(formatInput(input))
+	tree = TokenTree{Root: root}
+	return tree
+}
 
 //(+ (+ 2 3) 2 3 (- (+ 2 3) 3))
 func formatInput(input string) []string {
 	input = strings.Replace(input, "(", "( ", strings.Count(input, "("))
 	input = strings.Replace(input, ")", " ) ", strings.Count(input, ")"))
-	input = doubleSpaceReplace(input)
+	//input = doubleSpaceReplace(input)
 	input = strings.Replace(input, "  ", " ", strings.Count(input, "  "))
 	splitInput := strings.Split(input, " ")
 	return splitInput
 }
 
-func doubleSpaceReplace(input string) string {
+/*func doubleSpaceReplace(input string) string {
 	prev := ""
 	result := ""
 	for _, char := range input {
-		if (prev == " " || prev == "@!@REPLACESPACE@!@") && string(char) == " " {
+		strChar := string(char)
+		if (prev == " " || prev == "@!@REPLACESPACE@!@") && strChar == " " {
 			prev = "@!@REPLACESPACE@!@"
 			result += "@!@REPLACESPACE@!@"
 		} else {
@@ -51,7 +57,7 @@ func doubleSpaceReplace(input string) string {
 	}
 	return result
 }
-
+*/
 //(+ (+ 2 3) 2 3 (- 2 3))
 func parse(input []string) (*Token, int) {
 	token := Token{[]*Token{}, nil,
