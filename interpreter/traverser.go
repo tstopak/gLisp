@@ -105,11 +105,15 @@ func (traverser Traverser) evaluateList(token reader.Token) string {
 		if string(token.Children[1].Value) == "(" {
 			return reader.InternalInput(
 				traverser.Interpret(*reader.InternalInput(traverser.Interpret(*token.Children[1])).Root)).Root.Children[0].Value
+		} else if string(token.Children[1].Value[0]) == "(" {
+			return reader.InternalInput(token.Children[1].Value).Root.Children[0].Value
 		}
 		return token.Children[1].Children[0].Value
 	case "cdr":
 		if token.Children[1].Value == "(" {
 			token.Children[1] = reader.InternalInput(traverser.Interpret(*token.Children[1])).Root
+		} else if string(token.Children[1].Value[0]) == "(" {
+			token.Children[1] = reader.InternalInput(token.Children[1].Value).Root
 		}
 		result := "("
 		for index, child := range token.Children[1].Children {
