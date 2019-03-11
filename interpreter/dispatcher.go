@@ -1,8 +1,8 @@
 package interpreter
 
 import (
-	"golisp/GlispError"
-	"golisp/reader"
+	"glisp/GlispError"
+	"glisp/reader"
 )
 
 type dispatcher struct {

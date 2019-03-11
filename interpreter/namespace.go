@@ -2,9 +2,9 @@ package interpreter
 
 import (
 	"fmt"
-	"golisp/GlispError"
-	"golisp/core"
-	"golisp/reader"
+	"glisp/GlispError"
+	"glisp/core"
+	"glisp/reader"
 	"strconv"
 )
 

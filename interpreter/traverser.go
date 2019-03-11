@@ -2,7 +2,7 @@ package interpreter
 
 import (
 	"fmt"
-	"golisp/reader"
+	"glisp/reader"
 	"unicode"
 )
 

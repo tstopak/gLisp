@@ -1,6 +1,6 @@
 package core
 
-import "golisp/reader"
+import "glisp/reader"
 
 type Function struct {
 	Param reader.Token

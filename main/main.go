@@ -1,8 +1,8 @@
 package main
 
 import (
-	"golisp/interpreter"
-	"golisp/reader"
+	"glisp/interpreter"
+	"glisp/reader"
 )
 
 func main() {
